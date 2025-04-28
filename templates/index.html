@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vakıf İmparatorluğu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vakıf İmparatorluğu</h1>
+            <p>Osmanlı İmparatorluğu'nda bir vakıf yöneticisi olun</p>
+        </header>
+
+        <div class="game-board">
+            <div class="map" id="game-map">
+                <div class="map-overlay"></div>
+            </div>
+            
+            <!-- Diplomacy Panel -->
+            <div id="diplomacy-panel" class="game-panel" style="display: none;">
+                <h2>Diplomasi</h2>
+                <div id="diplomacy-content"></div>
+            </div>
+
+            <!-- Events Panel -->
+            <div id="events-panel" class="game-panel" style="display: none;">
+                <h2>Olaylar</h2>
+                <div id="active-events"></div>
+            </div>
+
+            <div class="map-title">Osmanlı İmparatorluğu Haritası</div>
+                <!-- City markers will be created dynamically by JavaScript -->
+            </div>
+
+            <div class="sidebar">
+                <div class="resources">
+                    <div><i class="fas fa-coins"></i> Akçe<span id="money">1000</span></div>
+                    <div><i class="fas fa-warehouse"></i> Malzeme<span id="materials">500</span></div>
+                    <div><i class="fas fa-users"></i> İşçi<span id="workers">50</span></div>
+                </div>
+                <div class="actions">
+                    <button id="build-btn" class="action-btn">
+                        <i class="fas fa-hammer"></i> İnşa Et
+                    </button>
+                    <button id="diplomacy-btn" class="action-btn">
+                        <i class="fas fa-handshake"></i> Diplomasi
+                    </button>
+                    <button id="events-btn" class="action-btn">
+                        <i class="fas fa-exclamation-circle"></i> Olaylar
+                        <span class="event-count" style="display: none;">0</span>
+                    </button>
+                    <button id="collect-btn"><i class="fas fa-hand-holding-usd"></i> Topla</button>
+                    <button id="manage-btn"><i class="fas fa-tasks"></i> Yönet</button>
+                    <button id="tutorial-btn"><i class="fas fa-question-circle"></i> Yardım</button>
+                </div>
+                <h2 id="selected-city-title">Şehir seçilmedi</h2>
+                <div id="city-info"></div>
+                <div class="building-list" id="buildings-container">
+                    <!-- Buildings will be listed here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab active" data-tab="needs">Halkın İhtiyaçları</div>
+            <div class="tab" data-tab="ideas">Halk Fikirleri</div>
+            <div class="tab" data-tab="events">Olaylar</div>
+            <div class="tab" data-tab="maintenance">Bakım</div>
+        </div>
+
+        <div id="needs-tab" class="tab-content active">
+            <div class="people-needs" id="needs-container">
+                <!-- Needs will be listed here -->
+            </div>
+        </div>
+
+        <div id="ideas-tab" class="tab-content">
+            <div class="actions">
+                <button id="submit-idea-btn"><i class="fas fa-lightbulb"></i> Halk Fikirlerini Görüntüle</button>
+            </div>
+            <div id="public-ideas">
+                <!-- Ideas will be listed here -->
+            </div>
+        </div>
+
+        <div id="events-tab" class="tab-content">
+            <div id="events-container">
+                <!-- Events will be listed here -->
+            </div>
+        </div>
+
+        <div id="maintenance-tab" class="tab-content">
+            <div id="maintenance-container">
+                <!-- Maintenance info will be listed here -->
+            </div>
+        </div>
+
+        <div class="log" id="game-log">
+            <p>Oyun başladı. Bir şehir seçin.</p>
+        </div>
+
+        <footer>
+            <p>Vakıf İmparatorluğu &copy; 2023 - Osmanlı İmparatorluğu temalı strateji oyunu</p>
+            <button id="save-game-btn">Oyunu Kaydet</button>
+            <button id="load-game-btn">Oyunu Yükle</button>
+            <button id="reset-game-btn">Oyunu Sıfırla</button>
+        </footer>
+    </div>
+
+    <!-- Build Modal -->
+    <div class="modal" id="build-modal">
+        <div class="modal-content">
+            <span class="close" id="close-build-modal">&times;</span>
+            <h2>Yeni Yapı İnşa Et</h2>
+            <p>Şehirdeki halkın ihtiyaçlarını karşılamak için yapılar inşa edin.</p>
+            <div id="building-options">
+                <!-- Building options will be listed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Repair Modal -->
+    <div class="modal" id="repair-modal">
+        <div class="modal-content">
+            <span class="close" id="close-repair-modal">&times;</span>
+            <h2>Yapı Onarım</h2>
+            <p>Onarım için gerekli kaynaklar:</p>
+            <div id="repair-costs"></div>
+            <button id="confirm-repair-btn">Onarımı Yap</button>
+        </div>
+    </div>
+
+    <!-- Idea Submission Modal -->
+    <div class="modal" id="idea-modal">
+        <div class="modal-content">
+            <span class="close" id="close-idea-modal">&times;</span>
+            <h2>Fikir Gönder</h2>
+            <p>Vakıf yönetimi için bir fikir paylaşın:</p>
+            <textarea id="idea-text" rows="5" placeholder="Fikrinizi buraya yazın..."></textarea>
+            <button id="submit-idea-confirm-btn">Fikri Gönder</button>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div class="modal" id="tutorial-modal">
+        <div class="modal-content">
+            <span class="close" id="close-tutorial-modal">&times;</span>
+            <h2>Oyun Rehberi</h2>
+            <div id="tutorial-content">
+                <!-- Tutorial content will be added here -->
+            </div>
+            <button id="tutorial-next-btn">İlerle</button>
+        </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <div id="login-screen">
+            <h1>Vakıf İmparatorluğu</h1>
+            <p>Osmanlı İmparatorluğu'nu yönetin ve güçlendirin!</p>
+            <div class="login-form">
+                <input type="text" id="username" placeholder="Kullanıcı Adı">
+                <input type="password" id="password" placeholder="Şifre">
+                <div class="login-buttons">
+                    <button id="login-btn">Giriş Yap</button>
+                    <button id="register-btn">Kaydol</button>
+                </div>
+            </div>
+            <div class="login-message" id="login-message"></div>
+        </div>
+        
+        <div id="difficulty-selection" style="display: none;">
+            <h1>Vakıf İmparatorluğu</h1>
+            <p>Osmanlı İmparatorluğu'nda bir vakıf yöneticisi olarak imparatorluğun farklı şehirlerinde halkın ihtiyaçlarını karşılamak için yapılar inşa edin, kaynakları yönetin ve tarihi yeniden şekillendirin.</p>
+            
+            <h2>Zorluk Seviyesi Seçin</h2>
+            <button class="difficulty-btn" data-difficulty="easy">Kolay</button>
+            <button class="difficulty-btn" data-difficulty="medium">Orta</button>
+            <button class="difficulty-btn" data-difficulty="hard">Zor</button>
+            
+            <div id="difficulty-info">
+                <p><strong>Kolay:</strong> Daha fazla başlangıç kaynağı, daha düşük maliyetler</p>
+                <p><strong>Orta:</strong> Dengeli kaynaklar ve maliyetler</p>
+                <p><strong>Zor:</strong> Sınırlı kaynaklar, daha yüksek maliyetler ve daha fazla zorluk</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/buildings.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/events.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/diplomacy.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/resources.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/citizens.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tutorial.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
